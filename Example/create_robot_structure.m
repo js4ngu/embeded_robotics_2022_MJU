@@ -6,42 +6,42 @@ function R = create_robot_structure(n)
 		error('too many joints (1 <= n <= 10');
 	end
 	
-	% ·Îº¿ ÀÌ¸§
+	% ? ?
 	R.name = 'untitled';
 	
-	% °üÀý °³¼ö
+	%  
 	R.n = n;
 	
 	R.T_gto0 = eye(4,4);
 	
 	for k = 1:n
 				
-		% DH ÆÄ¶ó¹ÌÅÍ		
+		% DH ?		
 		R.link(k).q_offset = 0;
 		R.link(k).d = 0;
 		R.link(k).l = 0;
 		R.link(k).a = 0;
 		
 		
-		% ÁÂÇ¥ º¯È¯
-		R.link(k).T_km1tok = eye(4,4);	% T^km1_k: ÀÌÀü ÁÂÇ¥°è¿¡¼­ ÇöÀç ÁÂÇ¥°è·ÎÀÇ º¯È¯
-		R.link(k).T_gtok = eye(4,4);		% T^g_k: Àü¿ª ÁÂÇ¥°è¿¡¼­ ÇöÀç ÁÂÇ¥°è·ÎÀÇ º¯È¯
+		% ? ?
+		R.link(k).T_km1tok = eye(4,4);	% T^km1_k:  ??  ? ?
+		R.link(k).T_gtok = eye(4,4);		% T^g_k:  ??  ? ?
 		
 		
 				
-		% Áú·®
+		% 
 		R.link(k).m = 0;
 		R.link(k).Icm = zeros(3,3);
 		
-		% °üÀý ÁÂÇ¥
+		%  ?
 		R.link(k).q = 0;
 		R.link(k).dq = 0;
 		R.link(k).ddq = 0;
 		
-		% ¹«°ÔÁß½É ÁÂÇ¥ (ÇöÀç(k) ÁÂÇ¥°è ±âÁØ)
+		% ? ? ((k) ? )
 		R.link(k).s = zeros(3,1);
 		
-		% ¸µÅ© ÁÂÇ¥ (base ÁÂÇ¥°è ±âÁØ ¹«°Ô Áß½ÉÀÇ À§Ä¡)
+		% ? ? (base ?   ? ?)
 		R.link(k).p = zeros(3,1);
 		R.link(k).dp = zeros(3,1);
 		R.link(k).ddp = zeros(3,1);
@@ -50,6 +50,6 @@ function R = create_robot_structure(n)
 		
 	end
 	
-	% ÀÚÄÚºñ¾È
+	% ?
 	R.J = zeros(6,n);
 		
