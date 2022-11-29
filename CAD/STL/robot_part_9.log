@@ -1,0 +1,29 @@
+STL로 Solid Edge 변환
+날짜: 화요일,11월 29,2022 01:47오후
+원본 파일:C:\Users\SEP16\Desktop\embeded_robotics\CAD\robot_part_9.par
+원본 시스템: SOLID EDGE
+
+하드웨어:
+프로세서: 11th Gen Intel(R) Core(TM) i7-1165G7 @ 2.80GHz
+운영 체제: Windows 10 Professional
+설치된 메모리: 7.68 GB
+
+소프트웨어 정보:
+Parasolid 버전: 35.0.149
+PSBodyshop 버전: 35.0.82
+Solid Edge 버전: 223.00.00.101 x64
+
+STL 내보내기 옵션:
+출력 파일 형식:BINARY
+표시된 파트 내보내기: 꺼짐
+structureOption: Monolithic
+단위 내보내기: Millimeter
+공차 값 내보내기:0.050000
+공차 유형 내보내기 : Custom
+곡면 평면 각도 값 내보내기:0.523599
+
+변환 진행률:
+1/2 단계 Parasolid 정보 가져오는 중...
+생성된 STL 파일 수: 1
+변환 작업을 완료했습니다.
+변환에 필요한 시간:00 : 00 : 00
