@@ -3,34 +3,43 @@
 #define L1 10
 #define L2 10
 
-double* cartsia2cylinder(double x, double y, double z);
+void cartsia2cylinder(double x, double y, double _z);
 double findTheta2(double r, double z);
 double findTheta1(double r, double z, double th2);
+void findInverseKinematic(double x, double y, double z);
 double cartsianCord[3];
-double* cylinderCord; 
+double r, pi, z;
+double motorDeg[3];
 
 int main(){
     scanf("%lf %lf %lf", &cartsianCord[0], &cartsianCord[1], &cartsianCord[2]);
-    cylinderCord = cartsia2cylinder(cartsianCord[0], cartsianCord[1], cartsianCord[2]);
-    printf("TransCord");
-    for (int i = 0; i < 3; i++){
-        printf("%lf\t", cylinderCord[i]);
-    }
-    double theta2 = findTheta2(cylinderCord[0],cylinderCord[2]);
-    double theta1 = findTheta1(cylinderCord[0],cylinderCord[2],theta2);
-    printf("\nTheta : %lf \t %lf\n",theta2, theta1);
+    findInverseKinematic(cartsianCord[0], cartsianCord[1], cartsianCord[2]);
+    for (size_t i = 0; i < 3; i++)
+        printf("%lf\t", motorDeg[i]);
+    /*
+    cartsia2cylinder(cartsianCord[0], cartsianCord[1], cartsianCord[2]);
+    printf("\nTrans cord: %lf\t%lf\t%lf\n",r,pi,z);
+    double theta2 = findTheta2(r,z);
+    double theta1 = findTheta1(r,z,theta2);
+    printf("Theta : %lf \t %lf\n",theta2, theta1);
+    */
     return 0;
 }
 
-double* cartsia2cylinder(double x, double y, double z){
-    double r, pi;
+void findInverseKinematic(double x, double y, double z){
+    cartsia2cylinder(x, y, z);
+    double theta2 = findTheta2(r,z);
+    double theta1 = findTheta1(r,z,theta2);
+    motorDeg[0] = pi;
+    motorDeg[1] = theta1;
+    motorDeg[2] = theta2;
+}
+
+void cartsia2cylinder(double x, double y, double _z){
     double cord[3];
     pi = atan2(y,x) * 57.2958;
     r = sqrt(x*x + y*y);
-    cord[0] = r;
-    cord[1] = pi;
-    cord[2] = z;
-    return cord;
+    z = _z;
 }
 
 double findTheta2(double r, double z){
