@@ -1,37 +1,46 @@
-#define MANUAL_MODE 0
-#define AUTONOMOUS_MODE 1
+#include <stdio.h>
+#include <math.h>
+#define L1 10
+#define L2 10
 
-void _init();
-void inputTarget();
-void checkCurrentState();
-void calcInverseKinematics();
-void move2target();
-void driveMotor(int motorID);
-void keyInput();
-void switchMode();
+double* cartsia2cylinder(double x, double y, double z);
+double findTheta2(double r, double z);
+double findTheta1(double r, double z, double th2);
+double cartsianCord[3];
+double* cylinderCord; 
 
-int STATE = MANUAL_MODE;
-double motorPos[3] = {0,0,0};
-
-void setup(){
-    _init();
+int main(){
+    scanf("%lf %lf %lf", &cartsianCord[0], &cartsianCord[1], &cartsianCord[2]);
+    cylinderCord = cartsia2cylinder(cartsianCord[0], cartsianCord[1], cartsianCord[2]);
+    printf("TransCord");
+    for (int i = 0; i < 3; i++){
+        printf("%lf\t", cylinderCord[i]);
+    }
+    double theta2 = findTheta2(cylinderCord[0],cylinderCord[2]);
+    double theta1 = findTheta1(cylinderCord[0],cylinderCord[2],theta2);
+    printf("\nTheta : %lf \t %lf\n",theta2, theta1);
+    return 0;
 }
 
-void loop(){
-    switch (STATE) {
-    case MANUAL_MODE:
-        int targetMotor = keyInput();
-        if (switchMode(MANUAL_MODE))
-            STATE = AUTONOMOUS_MODE;
-        driveMotor(targetMotor);
-    break;
+double* cartsia2cylinder(double x, double y, double z){
+    double r, pi;
+    double cord[3];
+    pi = atan2(y,x) * 57.2958;
+    r = sqrt(x*x + y*y);
+    cord[0] = r;
+    cord[1] = pi;
+    cord[2] = z;
+    return cord;
+}
 
-    case AUTONOMOUS_MODE:
-        inputTarget();
-        if (switchMode(AUTONOMOUS_MODE))
-            STATE = MANUAL_MODE;
-        checkCurrentState();
-        calcInverseKinematics();
-        move2target();
-    break;
+double findTheta2(double r, double z){
+    double innerSqrt = ((L1 + L2)*(L1 + L2) - (r*r + z*z))/
+                        ((r*r + z*z) - (L1 - L2)*(L1 - L2));
+    return 2*atan(sqrt(innerSqrt))* 57.2958;
+}
+
+double findTheta1(double r, double z, double th2){
+    double firstTerm = atan2(z,r)*57.2958;
+    double secondTerm = atan2(L2*sin(th2),(L1 + L2*cos(th2)))* 57.2958;
+    return firstTerm - secondTerm;
 }
