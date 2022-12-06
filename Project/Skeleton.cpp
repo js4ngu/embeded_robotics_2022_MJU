@@ -2,34 +2,69 @@
 #include <math.h>
 #define L1 10
 #define L2 10
+#define POTMODE 0
+#define INVERSEKINEMATIC 1
 
 void cartsia2cylinder(double x, double y, double _z);
 double findTheta2(double r, double z);
 double findTheta1(double r, double z, double th2);
 void findInverseKinematic(double x, double y, double z);
 void potRead();
+void potVal2motorDeg();
+bool modeSW();
+void FSM(bool mode);
+void InverseKinematicMode();
+void potMode();
 
 double cartsianCord[3];
 double r, pi, z;
 double motorDeg[3];
+int potVal[3];
 
 int main(){
+    FSM(modeSW());
+}
+
+void FSM(bool mode){
+    if (mode == INVERSEKINEMATIC) {
+        InverseKinematicMode();
+    }
+    else if (mode == POTMODE) {
+        potMode();
+    }
+}
+
+void InverseKinematicMode(){
     scanf("%lf %lf %lf", &cartsianCord[0], &cartsianCord[1], &cartsianCord[2]);
     findInverseKinematic(cartsianCord[0], cartsianCord[1], cartsianCord[2]);
     for (size_t i = 0; i < 3; i++)
         printf("%lf\t", motorDeg[i]);
-    return 0;
+}
+
+void potMode(){
+    potRead();
+    potVal2motorDeg();
+}
+
+bool modeSW(){
+    if (digiatlRead(6) == 1)
+        return POTMODE;
+    else
+        return INVERSEKINEMATIC;
 }
 
 void potRead(){
-    int val[3];
-    val[0] = analogRead(A0);
-    val[1] = analogRead(A0);
-    val[2] = analogRead(A0);
-    
+    potVal[0] = analogRead(A0);
+    potVal[1] = analogRead(A0);
+    potVal[2] = analogRead(A0);    
+}
+
+void potVal2motorDeg(){
     for (int i = 0; i < 3; i++) {
-        motorDeg[i] = map(val[i], 0, 1024, 0, 360);
-    }    
+        motorDeg[i] = map(potVal[i], 0, 1024, 0, 360);
+    }
+    for (size_t i = 0; i < 3; i++)
+        printf("%lf\t", motorDeg[i]);
 }
 
 void findInverseKinematic(double x, double y, double z){
