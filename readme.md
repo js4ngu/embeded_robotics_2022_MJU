@@ -10,3 +10,27 @@
   * 결과는 아래와 같음
   * ![th1](asset/3.jpeg)
   * ![th2](asset/2.jpeg)
+  * $\theta_1$은 $theta_2$에 dependency가 있음
+  * 즉, 직교좌표계 $\rArr$ 원통좌표계 $\rArr$ $\theta_2$ $\rArr$ $\theta_1$ 순으로 계산해야함
+  * 코드로 구현하면 아래와 같음
+  * ```cpp
+    void cartsia2cylinder(double x, double y, double _z){
+        double cord[3];
+        pi = atan2(y,x) * 57.2958;
+        r = sqrt(x*x + y*y);
+        z = _z;
+    }
+
+    double findTheta2(double r, double z){
+        double innerSqrt = ((L1 + L2)*(L1 + L2) - (r*r + z*z))/
+                            ((r*r + z*z) - (L1 - L2)*(L1 - L2));
+        return 2*atan(sqrt(innerSqrt))* 57.2958;
+    }
+
+    double findTheta1(double r, double z, double th2){
+        double firstTerm = atan2(z,r)*57.2958;
+        double secondTerm = atan2(L2*sin(th2),(L1 + L2*cos(th2)))* 57.2958;
+        return firstTerm - secondTerm;
+    }
+    ```
+  * 여차저차 $\theta_1$, $\theta_2$ 구해서 다이나믹셀에 전해주면 끝~
