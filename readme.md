@@ -11,7 +11,7 @@
   * ![th1](asset/3.jpeg)
   * ![th2](asset/2.jpeg)
   * $\theta_1$은 $theta_2$에 dependency가 있음
-  * 즉, 직교좌표계 $\rArr$ 원통좌표계 $\rArr$ $\theta_2$ $\rArr$ $\theta_1$ 순으로 계산해야함
+  * 즉, 직교좌표계 $\rightarrow$ 원통좌표계 $\rightarrow$ $\theta_2$ $\rightarrow$ $\theta_1$ 순으로 계산해야함
   * 코드로 구현하면 아래와 같음
   * ```cpp
     void cartsia2cylinder(double x, double y, double _z){
