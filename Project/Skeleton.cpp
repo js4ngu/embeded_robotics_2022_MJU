@@ -4,6 +4,8 @@
 #define L2 10
 #define POTMODE 0
 #define INVERSEKINEMATIC 1
+#define POT_X 0
+#define POT_Y 1
 
 void cartsia2cylinder(double x, double y, double _z);
 double findTheta2(double r, double z);
@@ -19,7 +21,8 @@ void potMode();
 double cartsianCord[3];
 double r, pi, z;
 double motorDeg[3];
-int potVal[3];
+int potVal[2];
+bool SW;
 
 int main(){
     FSM(modeSW());
@@ -54,9 +57,9 @@ bool modeSW(){
 }
 
 void potRead(){
-    potVal[0] = analogRead(A0);
-    potVal[1] = analogRead(A0);
-    potVal[2] = analogRead(A0);    
+    SW = digitalRead(A5);
+    potVal[POT_X] = analogRead(A4);
+    potVal[POT_Y] = analogRead(A4);
 }
 
 void potVal2motorDeg(){
