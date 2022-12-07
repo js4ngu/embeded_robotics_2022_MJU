@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#define L1 10
-#define L2 10
-#define DEBUG
+#define L1 35
+#define L2 35
+#define BUFFER_SIZE 10
 #define TX_Enable_pin            12  // 송신 활성화 핀
 #define RX_Enable_pin            13  // 수신 활성화 핀
 #define DX_ID                    0x07   // 서보모터 아이디
@@ -39,11 +39,11 @@ double findTheta1(double r, double z, double th2);
 void findInverseKinematic(double x, double y, double z);
 
 unsigned char ref[2];
-int inNum = 0;
 int potVal[3];
 double cartsianCord[3];
 double r, pi, z;
 double motorDeg[3];
+char buf[BUFFER_SIZE];
 
 void setup() {
     Serial.begin(57600);  // 통신 속도
@@ -67,25 +67,28 @@ void setup() {
 void loop() {
     switch (readModeSW()) {
     case POTMODE:
-        potRead();
+        ref[0] = 0xFD;
+        ref[1] = 0x07;
+        dx_tx_packet_for_position_control(254, ref);
+        delay(1000);
+        ref[0] = 0x00;
+        ref[1] = 0x00;
+        dx_tx_packet_for_position_control(254, ref);
+        delay(1000);
         break;
 
     case INVERSEKINEMATICMODE:
-        if (Serial.available()) {
-            inNum = Serial.parseInt();
+        Serial.println("Input");
+        for (int i = 0; i < 3;  i++){
+            if (Serial.available())
+                cartsianCord[i] = Serial.parseInt();
         }
-        if(inNum == 100){
-            ref[0] = 0xFD;
-            ref[1] = 0x07;
-            dx_tx_packet_for_position_control(254, ref);
-            delay(1000);
-            ref[0] = 0x00;
-            ref[1] = 0x00;
-            dx_tx_packet_for_position_control(254, ref);
-            delay(1000);
-            inNum = 0;
-        }
-        break;
+        findInverseKinematic(cartsianCord[0], cartsianCord[1], cartsianCord[2]);
+        Serial.print(motorDeg[0]);
+        Serial.print("\t");
+        Serial.print(motorDeg[1]);
+        Serial.print("\t");
+        Serial.println(motorDeg[2]);
     }
 }
 
