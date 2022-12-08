@@ -37,6 +37,7 @@ void cartsia2cylinder(double x, double y, double _z);
 double findTheta2(double r, double z);
 double findTheta1(double r, double z, double th2);
 void findInverseKinematic(double x, double y, double z);
+bool toggleSW();
 
 unsigned char ref[2];
 int potVal[3];
@@ -44,13 +45,18 @@ double cartsianCord[3];
 double r, pi, z;
 double motorDeg[3];
 char buf[BUFFER_SIZE];
-
+int stateMainFSM;
 void setup() {
     Serial.begin(57600);  // 통신 속도
     pinMode(TX_Enable_pin, OUTPUT); //TX Enable
     pinMode(RX_Enable_pin, OUTPUT); //RX Enable
+    pinMode(2, OUTPUT);
+    pinMode(5, OUTPUT);
+    pinMode(6, OUTPUT);
     pinMode(8, OUTPUT);
     pinMode(9, INPUT);
+    pinMode(10, INPUT);
+
     unsigned char cw_angle_limit[2];
     unsigned char ccw_angle_limit[2];
 
@@ -60,6 +66,8 @@ void setup() {
     ccw_angle_limit[1] = 0xFF;  
 
     dx_set_control_mode(254, cw_angle_limit, ccw_angle_limit);
+    digitalWrite(2, HIGH);
+    digitalWrite(6, HIGH);
     digitalWrite(8, HIGH);
     delay(1);
 }
@@ -67,6 +75,15 @@ void setup() {
 void loop() {
     switch (readModeSW()) {
     case POTMODE:
+        potRead();
+        break;
+
+    case INVERSEKINEMATICMODE:
+        for (int i = 0; i < 3;  i++) {
+            if (Serial.available())
+                cartsianCord[i] = Serial.parseInt();
+        }
+        findInverseKinematic(cartsianCord[0], cartsianCord[1], cartsianCord[2]);
         ref[0] = 0xFD;
         ref[1] = 0x07;
         dx_tx_packet_for_position_control(254, ref);
@@ -76,43 +93,89 @@ void loop() {
         dx_tx_packet_for_position_control(254, ref);
         delay(1000);
         break;
-
-    case INVERSEKINEMATICMODE:
-        Serial.println("Input");
-        for (int i = 0; i < 3;  i++){
-            if (Serial.available())
-                cartsianCord[i] = Serial.parseInt();
-        }
-        findInverseKinematic(cartsianCord[0], cartsianCord[1], cartsianCord[2]);
-        Serial.print(motorDeg[0]);
-        Serial.print("\t");
-        Serial.print(motorDeg[1]);
-        Serial.print("\t");
-        Serial.println(motorDeg[2]);
     }
-}
-
-void potRead(){
-    potVal[POT_BOTTOM] = analogRead(A0);
-    potVal[POT_MIDDLE] = analogRead(A1);
-    potVal[POT_TOP]    = analogRead(A2);
-    Serial.print(potVal[POT_BOTTOM]);
-    Serial.print("\t");
-    Serial.print(potVal[POT_MIDDLE]);
-    Serial.print("\t");
-    Serial.println(potVal[POT_TOP]);
 }
 
 int readModeSW(){
     bool modeSW = digitalRead(9);
     if(modeSW == 0){
+        digitalWrite(5, HIGH);
         return POTMODE;
     }
     else if(modeSW == 1){
+        digitalWrite(5, LOW);
         return INVERSEKINEMATICMODE;
     }
     else
         return ERROR;
+}
+
+bool toggleSW(){
+    static bool prev_btn;
+    static bool current_btn;
+    current_btn = digitalRead(10);
+    if ( (prev_btn ^ current_btn) == 1){
+        prev_btn = current_btn;
+        Serial.println("SW");
+        return 1;
+    }
+    else{
+        prev_btn = current_btn;
+        return 0;
+    }
+}
+
+void potRead(){
+    static int state = 0;
+    switch (state)
+    {
+    case 0:
+        while(1){
+            potVal[POT_BOTTOM] = analogRead(A2);
+            Serial.print("POT_BOTTOM : ");
+            Serial.println(potVal[POT_BOTTOM]);
+            if (toggleSW() == 1) {
+                state = 1;
+                break;
+            }
+        }
+        break;
+    case 1:
+        while(1){
+            potVal[POT_MIDDLE] = analogRead(A2);
+            Serial.print("POT_MIDDLE : ");
+            Serial.println(potVal[POT_MIDDLE]);
+            if (toggleSW() == 1) {
+                state = 2;
+                break;
+            }
+        }
+        break;
+    case 2:
+        while(1){
+            potVal[POT_TOP] = analogRead(A2);
+            Serial.print("POT_TOP : ");
+            Serial.println(potVal[POT_TOP]);
+            if (toggleSW() == 1) {
+                state = 3;
+                break;
+            }
+        }
+        break;
+    case 3:
+        Serial.print(potVal[POT_BOTTOM]);
+        Serial.print("\t");
+        Serial.print(potVal[POT_MIDDLE]);
+        Serial.print("\t");
+        Serial.println(potVal[POT_TOP]);
+        while (1) {
+            if (toggleSW() == 1) {
+                state = 0;
+                break;
+            }
+        }
+        break;
+    }
 }
 
 void set_com_mode(com_mode mode) {
