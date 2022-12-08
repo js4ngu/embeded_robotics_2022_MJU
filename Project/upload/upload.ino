@@ -33,19 +33,24 @@ void dx_set_control_mode(unsigned char id, unsigned char cw_angle_limit[2], unsi
 void dx_tx_packet_for_position_control(unsigned char id, unsigned char goal_pos[2]);
 int readModeSW();
 void potRead();
-void cartsia2cylinder(double x, double y, double _z);
-double findTheta2(double r, double z);
-double findTheta1(double r, double z, double th2);
-void findInverseKinematic(double x, double y, double z);
+void cartsia2cylinder(float x, float y, float _z);
+float findTheta2(float r, float z);
+float findTheta1(float r, float z, float th2);
+void findInverseKinematic(float x, float y, float z);
 bool toggleSW();
+char topPacket(int REF);
+char bottomPacket(int REF);
 
-unsigned char ref[2];
+unsigned char ref_0[2];
+unsigned char ref_1[2];
+unsigned char ref_2[2];
 int potVal[3];
-double cartsianCord[3];
-double r, pi, z;
-double motorDeg[3];
+float cartsianCord[3];
+float r, pi, z;
+int motorDeg[3];
 char buf[BUFFER_SIZE];
 int stateMainFSM;
+
 void setup() {
     Serial.begin(57600);  // 통신 속도
     pinMode(TX_Enable_pin, OUTPUT); //TX Enable
@@ -84,13 +89,17 @@ void loop() {
                 cartsianCord[i] = Serial.parseInt();
         }
         findInverseKinematic(cartsianCord[0], cartsianCord[1], cartsianCord[2]);
-        ref[0] = 0xFD;
-        ref[1] = 0x07;
-        dx_tx_packet_for_position_control(254, ref);
+        ref_0[0] = topPacket(motorDeg[0]);
+        ref_0[1] = bottomPacket(motorDeg[0]);
+        dx_tx_packet_for_position_control(254, ref_0);
         delay(1000);
-        ref[0] = 0x00;
-        ref[1] = 0x00;
-        dx_tx_packet_for_position_control(254, ref);
+        ref_1[0] = topPacket(motorDeg[1]);
+        ref_1[1] = bottomPacket(motorDeg[1]);
+        dx_tx_packet_for_position_control(254, ref_1);
+        delay(1000);
+        ref_2[0] = topPacket(motorDeg[2]);
+        ref_2[1] = bottomPacket(motorDeg[2]);
+        dx_tx_packet_for_position_control(254, ref_2);
         delay(1000);
         break;
     }
@@ -299,30 +308,38 @@ void dx_tx_packet_for_position_control(unsigned char id, unsigned char goal_pos[
   set_com_mode(RX_MODE); // 수신 모드로 설정
 }
 
-void findInverseKinematic(double x, double y, double z){
+void findInverseKinematic(float x, float y, float z){
     cartsia2cylinder(x, y, z);
-    double theta2 = findTheta2(r,z);
-    double theta1 = findTheta1(r,z,theta2);
-    motorDeg[0] = pi;
-    motorDeg[1] = theta1;
-    motorDeg[2] = theta2;
+    float theta2 = findTheta2(r,z);
+    float theta1 = findTheta1(r,z,theta2);
+    motorDeg[0] = int(pi*11);
+    motorDeg[1] = int(theta1*11);
+    motorDeg[2] = int(theta2*11);
 }
 
-void cartsia2cylinder(double x, double y, double _z){
-    double cord[3];
+void cartsia2cylinder(float x, float y, float _z){
+    float cord[3];
     pi = atan2(y,x) * 57.2958;
     r = sqrt(x*x + y*y);
     z = _z;
 }
 
-double findTheta2(double r, double z){
-    double innerSqrt = ((L1 + L2)*(L1 + L2) - (r*r + z*z))/
+float findTheta2(float r, float z){
+    float innerSqrt = ((L1 + L2)*(L1 + L2) - (r*r + z*z))/
                         ((r*r + z*z) - (L1 - L2)*(L1 - L2));
     return 2*atan(sqrt(innerSqrt))* 57.2958;
 }
 
-double findTheta1(double r, double z, double th2){
-    double firstTerm = atan2(z,r)*57.2958;
-    double secondTerm = atan2(L2*sin(th2),(L1 + L2*cos(th2)))* 57.2958;
+float findTheta1(float r, float z, float th2){
+    float firstTerm = atan2(z,r)*57.2958;
+    float secondTerm = atan2(L2*sin(th2),(L1 + L2*cos(th2)))* 57.2958;
     return firstTerm - secondTerm;
+}
+
+char bottomPacket(int REF){
+    return REF % 16;
+}
+
+char topPacket(int REF){
+  return (REF/16)%16;
 }
