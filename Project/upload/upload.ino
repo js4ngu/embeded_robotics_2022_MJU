@@ -88,6 +88,13 @@ void loop() {
             if (Serial.available())
                 cartsianCord[i] = Serial.parseInt();
         }
+        while (1) {
+            if (Serial.available())
+                char inCom = Serial.parseInt();
+            if (inCom == 'a')
+                break;
+        }
+        
         findInverseKinematic(cartsianCord[0], cartsianCord[1], cartsianCord[2]);
         ref_0[0] = topPacket(motorDeg[0]);
         ref_0[1] = bottomPacket(motorDeg[0]);
