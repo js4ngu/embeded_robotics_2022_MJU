@@ -38,8 +38,8 @@ float findTheta2(float r, float z);
 float findTheta1(float r, float z, float th2);
 void findInverseKinematic(float x, float y, float z);
 bool toggleSW();
-char topPacket(int REF);
-char bottomPacket(int REF);
+unsigned char topPacket(int REF);
+unsigned char bottomPacket(int REF);
 
 unsigned char ref_0[2];
 unsigned char ref_1[2];
@@ -336,10 +336,10 @@ float findTheta1(float r, float z, float th2){
     return firstTerm - secondTerm;
 }
 
-char bottomPacket(int REF){
-    return REF % 16;
+unsigned char bottomPacket(int REF){
+    return REF % (16*16);
 }
 
-char topPacket(int REF){
-  return (REF/16)%16;
+unsigned char topPacket(int REF){
+  return (REF/(16*16))%(16*16);
 }
