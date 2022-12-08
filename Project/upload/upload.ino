@@ -10,9 +10,9 @@
 #define INVERSEKINEMATICMODE     1
 #define MOTOR_TEST_MODE          2
 #define MOTOR_INIT_MODE          3
-#define POT_BOTTOM_ID            0
-#define POT_MIDDLE_ID            1
-#define POT_TOP_ID               100
+#define BOTTOM_ID                0
+#define MIDDLE_ID                1
+#define TOP_ID                   100
 #define POT_BOTTOM               0
 #define POT_MIDDLE               1
 #define POT_TOP                  2
@@ -36,7 +36,8 @@ void dx_set_control_mode(unsigned char id, unsigned char cw_angle_limit[2], unsi
 // 위치제어용 패킷 조립
 void dx_tx_packet_for_position_control(unsigned char id, unsigned char goal_pos[2]);
 int readModeSW();
-void potRead();
+void potMode();
+void inverseMode();
 void cartsia2cylinder(float x, float y, float _z);
 float findTheta2(float r, float z);
 float findTheta1(float r, float z, float th2);
@@ -84,93 +85,40 @@ void setup() {
 void loop() {
     switch (readModeSW()) {
     case POTMODE:
-        potRead();
+        potMode();
         break;
 
     case INVERSEKINEMATICMODE:
-        char inCom;
-        static int state = 0;
-        switch (state)
-        {
-        case 0:
-            for (int i = 0; i < 3;  i++) {
-                Serial.print("INPUT (since 3Sec) : \n");
-                delay(3000);
-                if (Serial.available()){
-                    cartsianCord[i] = Serial.parseInt();
-                }
-            }
-            while (1) {
-                char inCOme;
-                Serial.print("Press 'a' to start\n");
-                if (Serial.available()){
-                    inCOme = Serial.read();
-                }
-                if (inCOme == 'a') {
-                    break;
-                }
-            }
-            state = 1;
-            break;
-        
-        case 1:
-            findInverseKinematic(cartsianCord[0], cartsianCord[1], cartsianCord[2]);
-            ref_0[0] = bottomPacket(motorDeg[0]);
-            ref_0[1] = topPacket(motorDeg[0]);
-            dx_tx_packet_for_position_control(POT_BOTTOM_ID, ref_0);
-            delay(1000);
-            ref_1[0] = bottomPacket(motorDeg[1]);
-            ref_1[1] = topPacket(motorDeg[1]);
-            dx_tx_packet_for_position_control(POT_MIDDLE_ID, ref_1);
-            delay(1000);
-            ref_2[0] = bottomPacket(motorDeg[2]);
-            ref_2[1] = topPacket(motorDeg[2]);
-            dx_tx_packet_for_position_control(POT_TOP_ID, ref_2);
-            delay(1000);
-            state = 2;
-            break;
-        case 2:
-            while (1) {
-                char inCOme;
-                Serial.print("Press 'a' to restart\n");
-                if (Serial.available()){
-                    inCOme = Serial.read();
-                }
-                if (inCOme == 'a') {
-                    state = 0;
-                    break;
-                }
-            }
-        }
-
+        inverseMode();
+        break;
 
     case MOTOR_TEST_MODE:
         ref_0[0] = 0x00;
         ref_0[1] = 0x10;
-        dx_tx_packet_for_position_control(POT_BOTTOM_ID, ref_0);
+        dx_tx_packet_for_position_control(BOTTOM_ID, ref_0);
         delay(1000);
-        dx_tx_packet_for_position_control(POT_MIDDLE_ID, ref_0);
+        dx_tx_packet_for_position_control(MIDDLE_ID, ref_0);
         delay(1000);
-        dx_tx_packet_for_position_control(POT_TOP_ID, ref_0);
+        dx_tx_packet_for_position_control(TOP_ID, ref_0);
         delay(1000);
         ref_0[0] = 0x00;
         ref_0[1] = 0x00;
-        dx_tx_packet_for_position_control(POT_BOTTOM_ID, ref_0);
+        dx_tx_packet_for_position_control(BOTTOM_ID, ref_0);
         delay(1000);
-        dx_tx_packet_for_position_control(POT_MIDDLE_ID, ref_0);
+        dx_tx_packet_for_position_control(MIDDLE_ID, ref_0);
         delay(1000);
-        dx_tx_packet_for_position_control(POT_TOP_ID, ref_0);
+        dx_tx_packet_for_position_control(TOP_ID, ref_0);
         delay(1000);
         break;
 
     case MOTOR_INIT_MODE:
         ref_0[0] = 0x00;
         ref_0[1] = 0x08;
-        dx_tx_packet_for_position_control(POT_BOTTOM_ID, ref_0);
+        dx_tx_packet_for_position_control(BOTTOM_ID, ref_0);
         delay(1000);
-        dx_tx_packet_for_position_control(POT_MIDDLE_ID, ref_0);
+        dx_tx_packet_for_position_control(MIDDLE_ID, ref_0);
         delay(1000);
-        dx_tx_packet_for_position_control(POT_TOP_ID, ref_0);
+        dx_tx_packet_for_position_control(TOP_ID, ref_0);
         delay(1000);
         while(1);
     }
@@ -205,7 +153,7 @@ bool toggleSW(){
     }
 }
 
-void potRead(){
+void potMode(){
     static int state = 0;
     switch (state)
     {
@@ -258,15 +206,15 @@ void potRead(){
 
         ref_0[0] = bottomPacket(motorDeg[0]);
         ref_0[1] = topPacket(motorDeg[0]);
-        dx_tx_packet_for_position_control(POT_BOTTOM_ID, ref_0);
+        dx_tx_packet_for_position_control(BOTTOM_ID, ref_0);
         delay(1000);
         ref_1[0] = bottomPacket(motorDeg[1]);
         ref_1[1] = topPacket(motorDeg[1]);
-        dx_tx_packet_for_position_control(POT_MIDDLE_ID, ref_1);
+        dx_tx_packet_for_position_control(MIDDLE_ID, ref_1);
         delay(1000);
         ref_2[0] = bottomPacket(motorDeg[2]);
         ref_2[1] = topPacket(motorDeg[2]);
-        dx_tx_packet_for_position_control(POT_TOP_ID, ref_2);
+        dx_tx_packet_for_position_control(TOP_ID, ref_2);
         delay(1000);
 
         while (1) {
@@ -434,4 +382,61 @@ unsigned char bottomPacket(int REF){
 
 unsigned char topPacket(int REF){
   return (REF/(16*16))%(16*16);
+}
+
+void inverseMode(){
+    char inCom;
+    static int state = 0;
+    switch (state)
+    {
+    case 0:
+        for (int i = 0; i < 3;  i++) {
+            Serial.print("INPUT (since 3Sec) : \n");
+            delay(3000);
+            if (Serial.available()){
+                cartsianCord[i] = Serial.parseInt();
+            }
+        }
+        while (1) {
+            char inCOme;
+            Serial.print("Press 'a' to start\n");
+            if (Serial.available()){
+                inCOme = Serial.read();
+            }
+            if (inCOme == 'a') {
+                break;
+            }
+        }
+        state = 1;
+        break;
+    
+    case 1:
+        findInverseKinematic(cartsianCord[0], cartsianCord[1], cartsianCord[2]);
+        ref_0[0] = bottomPacket(motorDeg[0]);
+        ref_0[1] = topPacket(motorDeg[0]);
+        dx_tx_packet_for_position_control(BOTTOM_ID, ref_0);
+        delay(1000);
+        ref_1[0] = bottomPacket(motorDeg[1]);
+        ref_1[1] = topPacket(motorDeg[1]);
+        dx_tx_packet_for_position_control(MIDDLE_ID, ref_1);
+        delay(1000);
+        ref_2[0] = bottomPacket(motorDeg[2]);
+        ref_2[1] = topPacket(motorDeg[2]);
+        dx_tx_packet_for_position_control(TOP_ID, ref_2);
+        delay(1000);
+        state = 2;
+        break;
+    case 2:
+        while (1) {
+            char inCOme;
+            Serial.print("Press 'a' to restart\n");
+            if (Serial.available()){
+                inCOme = Serial.read();
+            }
+            if (inCOme == 'a') {
+                state = 0;
+                break;
+            }
+        }
+    }
 }
