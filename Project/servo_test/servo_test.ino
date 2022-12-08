@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #define TX_Enable_pin (12)  // 송신 활성화 핀
 #define RX_Enable_pin (13)  // 수신 활성화 핀
-#define DX_ID         (0x07)   // 서보모터 아이디
+#define DX_ID         (2)   // 서보모터 아이디
 
 typedef enum _com_mode {
   RX_MODE,
@@ -160,8 +160,8 @@ void setup() {
   unsigned char cw_angle_limit[2];
   unsigned char ccw_angle_limit[2];
 
-//  dx_set_id(DX_ID);
-//  delay(1);
+  dx_set_id(100);
+  delay(1);
 
   // 관절 모드로 설정
   cw_angle_limit[0] = 0x00;
@@ -170,8 +170,8 @@ void setup() {
   ccw_angle_limit[1] = 0x0F;  
   //delay(1);
 
-//  dx_set_control_mode(DX_ID, cw_angle_limit, ccw_angle_limit);
-  dx_set_control_mode(254, cw_angle_limit, ccw_angle_limit);
+  dx_set_control_mode(100, cw_angle_limit, ccw_angle_limit);
+  //dx_set_control_mode(254, cw_angle_limit, ccw_angle_limit);
   
   delay(1);
   
@@ -192,12 +192,12 @@ void loop() {
 
   ref[0] = 0xFD;
   ref[1] = 0x07;
-//  dx_tx_packet_for_position_control(DX_ID, ref);
-  dx_tx_packet_for_position_control(254, ref);
+  dx_tx_packet_for_position_control(100, ref);
+  //dx_tx_packet_for_position_control(254, ref);
   delay(1000);
   ref[0] = 0x00;
   ref[1] = 0x00;
-//  dx_tx_packet_for_position_control(DX_ID, ref);
-  dx_tx_packet_for_position_control(254, ref);
+  dx_tx_packet_for_position_control(100, ref);
+  //dx_tx_packet_for_position_control(254, ref);
   delay(1000);
 }

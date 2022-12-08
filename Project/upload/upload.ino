@@ -6,9 +6,13 @@
 #define BUFFER_SIZE 10
 #define TX_Enable_pin            12  // 송신 활성화 핀
 #define RX_Enable_pin            13  // 수신 활성화 핀
-#define DX_ID                    0x07   // 서보모터 아이디
 #define POTMODE                  0
 #define INVERSEKINEMATICMODE     1
+#define MOTOR_TEST_MODE          2
+#define MOTOR_INIT_MODE          3
+#define POT_BOTTOM_ID            0
+#define POT_MIDDLE_ID            1
+#define POT_TOP_ID               100
 #define POT_BOTTOM               0
 #define POT_MIDDLE               1
 #define POT_TOP                  2
@@ -84,31 +88,91 @@ void loop() {
         break;
 
     case INVERSEKINEMATICMODE:
-        for (int i = 0; i < 3;  i++) {
-            if (Serial.available())
-                cartsianCord[i] = Serial.parseInt();
-        }
-        while (1) {
-            if (Serial.available())
-                char inCom = Serial.parseInt();
-            if (inCom == 'a')
-                break;
-        }
+        char inCom;
+        static int state = 0;
+        switch (state)
+        {
+        case 0:
+            for (int i = 0; i < 3;  i++) {
+                Serial.print("INPUT (since 3Sec) : \n");
+                delay(3000);
+                if (Serial.available()){
+                    cartsianCord[i] = Serial.parseInt();
+                }
+            }
+            while (1) {
+                char inCOme;
+                Serial.print("Press 'a' to start\n");
+                if (Serial.available()){
+                    inCOme = Serial.read();
+                }
+                if (inCOme == 'a') {
+                    break;
+                }
+            }
+            state = 1;
+            break;
         
-        findInverseKinematic(cartsianCord[0], cartsianCord[1], cartsianCord[2]);
-        ref_0[0] = topPacket(motorDeg[0]);
-        ref_0[1] = bottomPacket(motorDeg[0]);
-        dx_tx_packet_for_position_control(254, ref_0);
+        case 1:
+            findInverseKinematic(cartsianCord[0], cartsianCord[1], cartsianCord[2]);
+            ref_0[0] = bottomPacket(motorDeg[0]);
+            ref_0[1] = topPacket(motorDeg[0]);
+            dx_tx_packet_for_position_control(POT_BOTTOM_ID, ref_0);
+            delay(1000);
+            ref_1[0] = bottomPacket(motorDeg[1]);
+            ref_1[1] = topPacket(motorDeg[1]);
+            dx_tx_packet_for_position_control(POT_MIDDLE_ID, ref_1);
+            delay(1000);
+            ref_2[0] = bottomPacket(motorDeg[2]);
+            ref_2[1] = topPacket(motorDeg[2]);
+            dx_tx_packet_for_position_control(POT_TOP_ID, ref_2);
+            delay(1000);
+            state = 2;
+            break;
+        case 2:
+            while (1) {
+                char inCOme;
+                Serial.print("Press 'a' to restart\n");
+                if (Serial.available()){
+                    inCOme = Serial.read();
+                }
+                if (inCOme == 'a') {
+                    state = 0;
+                    break;
+                }
+            }
+        }
+
+
+    case MOTOR_TEST_MODE:
+        ref_0[0] = 0x00;
+        ref_0[1] = 0x10;
+        dx_tx_packet_for_position_control(POT_BOTTOM_ID, ref_0);
         delay(1000);
-        ref_1[0] = topPacket(motorDeg[1]);
-        ref_1[1] = bottomPacket(motorDeg[1]);
-        dx_tx_packet_for_position_control(254, ref_1);
+        dx_tx_packet_for_position_control(POT_MIDDLE_ID, ref_0);
         delay(1000);
-        ref_2[0] = topPacket(motorDeg[2]);
-        ref_2[1] = bottomPacket(motorDeg[2]);
-        dx_tx_packet_for_position_control(254, ref_2);
+        dx_tx_packet_for_position_control(POT_TOP_ID, ref_0);
+        delay(1000);
+        ref_0[0] = 0x00;
+        ref_0[1] = 0x00;
+        dx_tx_packet_for_position_control(POT_BOTTOM_ID, ref_0);
+        delay(1000);
+        dx_tx_packet_for_position_control(POT_MIDDLE_ID, ref_0);
+        delay(1000);
+        dx_tx_packet_for_position_control(POT_TOP_ID, ref_0);
         delay(1000);
         break;
+
+    case MOTOR_INIT_MODE:
+        ref_0[0] = 0x00;
+        ref_0[1] = 0x08;
+        dx_tx_packet_for_position_control(POT_BOTTOM_ID, ref_0);
+        delay(1000);
+        dx_tx_packet_for_position_control(POT_MIDDLE_ID, ref_0);
+        delay(1000);
+        dx_tx_packet_for_position_control(POT_TOP_ID, ref_0);
+        delay(1000);
+        while(1);
     }
 }
 
@@ -147,7 +211,7 @@ void potRead(){
     {
     case 0:
         while(1){
-            potVal[POT_BOTTOM] = analogRead(A2);
+            potVal[POT_BOTTOM] = analogRead(A2)*4;
             Serial.print("POT_BOTTOM : ");
             Serial.println(potVal[POT_BOTTOM]);
             if (toggleSW() == 1) {
@@ -158,7 +222,7 @@ void potRead(){
         break;
     case 1:
         while(1){
-            potVal[POT_MIDDLE] = analogRead(A2);
+            potVal[POT_MIDDLE] = analogRead(A2)*4;
             Serial.print("POT_MIDDLE : ");
             Serial.println(potVal[POT_MIDDLE]);
             if (toggleSW() == 1) {
@@ -169,7 +233,7 @@ void potRead(){
         break;
     case 2:
         while(1){
-            potVal[POT_TOP] = analogRead(A2);
+            potVal[POT_TOP] = analogRead(A2)*4;
             Serial.print("POT_TOP : ");
             Serial.println(potVal[POT_TOP]);
             if (toggleSW() == 1) {
@@ -184,12 +248,33 @@ void potRead(){
         Serial.print(potVal[POT_MIDDLE]);
         Serial.print("\t");
         Serial.println(potVal[POT_TOP]);
+        state = 4;
+        break;
+
+    case 4:
+        motorDeg[POT_BOTTOM] = potVal[POT_BOTTOM];
+        motorDeg[POT_MIDDLE] = potVal[POT_MIDDLE];
+        motorDeg[POT_TOP]    = potVal[POT_TOP];
+
+        ref_0[0] = bottomPacket(motorDeg[0]);
+        ref_0[1] = topPacket(motorDeg[0]);
+        dx_tx_packet_for_position_control(POT_BOTTOM_ID, ref_0);
+        delay(1000);
+        ref_1[0] = bottomPacket(motorDeg[1]);
+        ref_1[1] = topPacket(motorDeg[1]);
+        dx_tx_packet_for_position_control(POT_MIDDLE_ID, ref_1);
+        delay(1000);
+        ref_2[0] = bottomPacket(motorDeg[2]);
+        ref_2[1] = topPacket(motorDeg[2]);
+        dx_tx_packet_for_position_control(POT_TOP_ID, ref_2);
+        delay(1000);
+
         while (1) {
             if (toggleSW() == 1) {
                 state = 0;
                 break;
             }
-        }
+        }    
         break;
     }
 }
