@@ -40,10 +40,5 @@
   * 포텐셜 미터 값 읽어서 각관절 구동~
   
  ## Report
-![임베디드로보틱스 _6조_유종상_601718511024_1](https://user-images.githubusercontent.com/30527114/211146406-c1b8c724-3a58-4ae0-8c00-64d24265262f.jpg)
-![임베디드로보틱스 _6조_유종상_601718511024_2](https://user-images.githubusercontent.com/30527114/211146407-b22f085c-ba0a-423c-90e1-57c76b117d89.jpg)
-![임베디드로보틱스 _6조_유종상_601718511024_3](https://user-images.githubusercontent.com/30527114/211146409-279e3191-742c-4820-8d9c-4c49084fddbb.jpg)
-![임베디드로보틱스 _6조_유종상_601718511024_4](https://user-images.githubusercontent.com/30527114/211146411-0b774eeb-6f8a-4251-8b47-fb33fc225cf1.jpg)
-![임베디드로보틱스 _6조_유종상_601718511024_5](https://user-images.githubusercontent.com/30527114/211146412-1330fbbd-3122-4baf-9ead-62426fb4be36.jpg)
+ [[임베디드로보틱스]_6조_유종상_60171851.pdf](https://github.com/js4ngu/embeded_robotics_2022_MJU/files/10366018/_6._._60171851.pdf)
 
-  
